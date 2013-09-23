@@ -17,8 +17,8 @@ while (<>) {
     if (/\s+(\d+)\s+(\d+)\s+\d+$/) {
         my $us = $1;
         my $id = $2;
-        my @values = split;
-        warn Dumper \@values;
+#        my @values = split;
+#        warn Dumper \@values;
         push @{$stat{id}}, $id;
         push @{$stat{us}}, $us;
         push @{$stat{time}}, $time++;
@@ -48,6 +48,6 @@ close IMG;
 
 1;
 
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
- 3  0 149892 122636 106028 310048    0    0     0     0   88  177  0  0 100  0
+# r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+# 3  0 149892 122636 106028 310048    0    0     0     0   88  177  0  0 100  0
 
