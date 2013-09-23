@@ -5,26 +5,39 @@ use strict;
 use Data::Dumper;
 use GD::Graph::lines;
 
-my %stat = {
-    id      => [],
-    us      => [],
-    time    => [],
+my $request_fields = ["id", "us", "sy", "wa"];
+
+my $fields = {
+    r       => 0,
+    b       => 1,
+    swpd    => 2,
+    free    => 3,
+    buff    => 4,
+    cache   => 5,
+    si      => 6,
+    so      => 7,
+    bi      => 8,
+    bo      => 9,
+    in      => 10,
+    cs      => 11,
+    us      => 12,
+    sy      => 13,
+    id      => 14,
+    wa      => 15,
 };
+
+my %stat = ( time => [] );
 my $time = 0;
 
 while (<>) {
     chomp;
-    if (/\s+(\d+)\s+(\d+)\s+\d+$/) {
-        my $us = $1;
-        my $id = $2;
-#        my @values = split;
-#        warn Dumper \@values;
-        push @{$stat{id}}, $id;
-        push @{$stat{us}}, $us;
-        push @{$stat{time}}, $time++;
-    } else {
-        next;
+    next unless (/^(\s+\d+)+$/);
+    my @values = split;
+    foreach my $request_field ( @$request_fields ) {
+        next unless exists $fields->{$request_field};
+        push @{$stat{$request_field}}, $values[$fields->{$request_field}];
     }
+    push $stat{time}, $time++;
 }
 
 my $graph = GD::Graph::lines->new(scalar @{$stat{time}} * 10, 1024);
@@ -34,12 +47,16 @@ $graph->set(
     title             => 'vmstat cpu usage',
     x_labels_vertical => 1,
     x_label_skip      => 10,
-    line_width        => 7,
+    line_width        => 4,
 ) or die $graph->error;
 $graph->set_title_font('/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf', 24);
 $graph->set_legend_font('/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf', 24);
-$graph->set_legend("idle", "user");
-my @data = ($stat{time}, $stat{id}, $stat{us});
+$graph->set_legend(@$request_fields);
+my @data = ();
+push @data, $stat{time};
+foreach my $request_field ( @$request_fields ) {
+    push @data, $stat{$request_field};
+}
 my $gd = $graph->plot(\@data) or die $graph->error;
 open IMG, '>vmstat_graph.gif' or die $!;
 binmode IMG;
@@ -47,7 +64,3 @@ print IMG $gd->gif;
 close IMG;
 
 1;
-
-# r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
-# 3  0 149892 122636 106028 310048    0    0     0     0   88  177  0  0 100  0
-
