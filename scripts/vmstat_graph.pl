@@ -29,9 +29,11 @@ my $fields = {
 my %stat = ( time => [] );
 my $time = 0;
 
-while (<>) {
-    chomp;
-    next unless (/^(\s+\d+)+$/);
+my $statistic = $ARGV[0] || "&STDIN";
+open( my $input_fh, "<$statistic" ) or die "Cannot open input: $!";
+
+while ( <$input_fh> ) {
+    next unless ( /^(\s+\d+)+$/ );
     my @values = split;
     foreach my $request_field ( @$request_fields ) {
         next unless exists $fields->{$request_field};
@@ -40,17 +42,17 @@ while (<>) {
     push $stat{time}, $time++;
 }
 
-my $graph = GD::Graph::lines->new(scalar @{$stat{time}} * 10, 1024);
+my $graph = GD::Graph::lines->new(scalar @{$stat{time}} * 10, 512);
 $graph->set(
     x_label           => 'Time, s',
     y_label           => 'CPU usage, %',
     title             => 'vmstat cpu usage',
     x_labels_vertical => 1,
-    x_label_skip      => 10,
+    x_label_skip      => 5,
     line_width        => 4,
 ) or die $graph->error;
-$graph->set_title_font('/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf', 24);
-$graph->set_legend_font('/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf', 24);
+$graph->set_title_font('/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf', 24); #while testing
+$graph->set_legend_font('/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf', 24); #while testing
 $graph->set_legend(@$request_fields);
 my @data = ();
 push @data, $stat{time};
